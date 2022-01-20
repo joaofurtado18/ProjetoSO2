@@ -6,6 +6,8 @@
 #include <string.h>
 
 static pthread_mutex_t single_global_lock;
+pthread_cond_t open_file;
+bool destroy;
 
 int tfs_init() {
     state_init();
@@ -18,6 +20,10 @@ int tfs_init() {
     if (root != ROOT_DIR_INUM) {
         return -1;
     }
+    if (pthread_cond_init(&open_file, NULL) != 0)
+        return -1;
+
+    destroy = false;
 
     return 0;
 }
@@ -36,6 +42,17 @@ static bool valid_pathname(char const *name) {
 
 int tfs_destroy_after_all_closed() {
     /* TO DO: implement this */
+    if (pthread_mutex_lock(&single_global_lock) != 0)
+        return -1;
+
+    while (verify_empty_file_table() == false)
+        pthread_cond_wait(&open_file, &single_global_lock);
+
+    destroy = true;
+
+    if (pthread_mutex_unlock(&single_global_lock) != 0)
+        return -1;
+    
     return 0;
 }
 
@@ -115,6 +132,10 @@ static int _tfs_open_unsynchronized(char const *name, int flags) {
 int tfs_open(char const *name, int flags) {
     if (pthread_mutex_lock(&single_global_lock) != 0)
         return -1;
+    
+    if (destroy)
+        return -1;
+
     int ret = _tfs_open_unsynchronized(name, flags);
     if (pthread_mutex_unlock(&single_global_lock) != 0)
         return -1;
@@ -125,7 +146,12 @@ int tfs_open(char const *name, int flags) {
 int tfs_close(int fhandle) {
     if (pthread_mutex_lock(&single_global_lock) != 0)
         return -1;
+
     int r = remove_from_open_file_table(fhandle);
+
+    if (verify_empty_file_table())
+        pthread_cond_signal(&open_file);
+
     if (pthread_mutex_unlock(&single_global_lock) != 0)
         return -1;
 

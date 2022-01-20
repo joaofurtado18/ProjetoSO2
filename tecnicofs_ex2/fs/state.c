@@ -337,3 +337,11 @@ open_file_entry_t *get_open_file_entry(int fhandle) {
     }
     return &open_file_table[fhandle];
 }
+
+int verify_empty_file_table() {
+    for (int i = 0; i < MAX_OPEN_FILES; i++) {
+        if (free_open_file_entries[i] == TAKEN)
+            return 0;
+    }
+    return 1;
+}
