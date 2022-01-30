@@ -1,7 +1,36 @@
 #include "tecnicofs_client_api.h"
+#include <stdio.h>
+#include <string.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <errno.h>
+
+void produzMsg (char *buf) {
+    strcpy(buf, "Mensagem de teste");
+}
+
+void trataMsg (char* buf) {
+    printf("Recebeu: %s\n", buf);
+}
 
 int tfs_mount(char const *client_pipe_path, char const *server_pipe_path) {
-    /* TODO: Implement this */
+    int fd_server, fd_client;
+    char buffer[1024];
+
+    if (mkfifo(client_pipe_path, 0777) == -1){
+        if (errno != EEXIST){
+            return -1;
+        }
+    }
+
+    fd_server = open(server_pipe_path, O_WRONLY);
+    produzMsg(buffer);
+    write(fd_server, client_pipe_path, 1024);
+    fd_client = open(client_pipe_path, O_RDONLY);
+
+
     return -1;
 }
 
