@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
 
     if(mkfifo(pipename, 0777) == -1){
         if (errno != EEXIST){
-            puts("[ERR] error creating server pipe");
+            printf("[ERR] error creating server pipe: %s\n", strerror(errno));
             return -1;
         }
     }
@@ -42,17 +42,38 @@ int main(int argc, char **argv) {
     
     /* TO DO */
     ssize_t n;
-    char buffer[1024];
-    while (1){
-        n = read(pipename, buffer, 1024);
-        if (n <= 0) { break; }
-        trataMsg(buffer);
-        client c;
-        c.session_id = session_id;
-        session_id++;
-        strcpy(c.path, buffer);
-        n = write(c.path, "connection established\n", 25);
+    char buffer[40];
+    char opt;
+    int fd_server, fd_client;
+    if ((fd_server = open(pipename, O_RDONLY)) < 0){
+        printf("%s\n", strerror(errno));
+        return -1;
     }
+    puts("opened");
+    n = read(fd_server, buffer, 40-1);
+    if (n <= 0){
+        printf("n: %s\n", strerror(errno));
+    }
+
+    while(1){
+        puts("paradox");
+        clients[session_id].session_id = session_id;
+        puts("buffer");
+        puts(buffer);
+        strcpy(clients[session_id].path, buffer);
+        puts("opaaa");
+        clients[session_id].path[39] = 0;
+        session_id++;
+        puts(clients[session_id-1].path);
+    }
+
+    // while (1){
+    //     n = read(fd_server, opt, 1);
+    //     switch(n){
+    //         case '1':
+
+    //     }
+    // }
 
     return 0;
 }
