@@ -11,7 +11,7 @@
 
 int session_id = 0;
 typedef struct client_s{
-    char* path;
+    char path[40];
     int session_id;
 } client;
 
@@ -49,31 +49,30 @@ int main(int argc, char **argv) {
         printf("%s\n", strerror(errno));
         return -1;
     }
-    puts("opened");
     n = read(fd_server, buffer, 40-1);
     if (n <= 0){
         printf("n: %s\n", strerror(errno));
     }
 
-    while(1){
-        puts("paradox");
-        clients[session_id].session_id = session_id;
-        puts("buffer");
-        puts(buffer);
-        strcpy(clients[session_id].path, buffer);
-        puts("opaaa");
-        clients[session_id].path[39] = 0;
-        session_id++;
-        puts(clients[session_id-1].path);
+    clients[session_id].session_id = session_id;
+    strcpy(clients[session_id].path, buffer);
+    clients[session_id].path[39] = 0;
+    puts("copied.");
+    puts(clients[session_id].path);
+    if ((fd_client = open(clients[session_id].path, O_WRONLY)) < 0){
+        printf("error opening server -> client path: %s\n", strerror(errno));
+        fflush(stdout);
+        return -1;
     }
+    session_id++;
 
-    // while (1){
-    //     n = read(fd_server, opt, 1);
-    //     switch(n){
-    //         case '1':
-
-    //     }
-    // }
+    while (1){
+        n = read(fd_server, opt, 1);
+        switch(n){
+            case '1':
+                break;
+        }
+    }
 
     return 0;
 }

@@ -28,16 +28,14 @@ int tfs_mount(char const *client_pipe_path, char const *server_pipe_path) {
         printf("error opening server: %s\n", strerror(errno));
         return -1;
     }
-    puts("writing");
-    // if ((fd_client = open(client_pipe_path, O_RDONLY)) < 0){
-    //     printf("error opening client: %s\n", strerror(errno));
-    //     return -1;
-    // }
+
     write(fd_server, client_pipe_path, 40-1);
-    // read(fd_client, buffer, 1024);
-    // buffer[1023] = 0;
-    // close(fd_client);
-    // close(fd_server);
+
+    if ((fd_client = open(client_pipe_path, O_RDONLY)) < 0){
+        printf("error opening client: %s\n", strerror(errno));
+        fflush(stdout);
+        return -1;
+    }
 
     return -1;
 }
@@ -49,6 +47,7 @@ int tfs_unmount() {
 
 int tfs_open(char const *name, int flags) {
     /* TODO: Implement this */
+
     return -1;
 }
 
