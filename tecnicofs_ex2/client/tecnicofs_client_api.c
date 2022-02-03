@@ -6,9 +6,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <errno.h>
+int fd_server, fd_client;
 
 int tfs_mount(char const *client_pipe_path, char const *server_pipe_path) {
-    int fd_server, fd_client;
 
     if (unlink(client_pipe_path) == -1){
         puts("client unlink error");
@@ -24,20 +24,21 @@ int tfs_mount(char const *client_pipe_path, char const *server_pipe_path) {
         return -1;
     }
     char opc = '1';
-    write(fd_server,  &opc, 1);
-    write(fd_server, client_pipe_path, 40);
-    opc = '2';
-    write(fd_server,  &opc, 1);
-
-
-
-    if ((fd_client = open(client_pipe_path, O_RDONLY)) < 0){
-        printf("error opening client: %s\n", strerror(errno));
-        fflush(stdout);
+    if (write(fd_server,  &opc, 1) < 0){
+        printf("error writing opcode: %d\n");
+        return -1;
+    }
+    if (write(fd_server, client_pipe_path, 40) < 0){
+        printf("error writing client_pipe_path: %d\n");
         return -1;
     }
 
-    return -1;
+    if ((fd_client = open(client_pipe_path, O_RDONLY)) < 0){
+        printf("error opening client: %s\n", strerror(errno));
+        return -1;
+    }
+
+    return 0;
 }
 
 int tfs_unmount() {
@@ -47,7 +48,9 @@ int tfs_unmount() {
 
 int tfs_open(char const *name, int flags) {
     /* TODO: Implement this */
-
+    char opc = '3';
+    write(fd_server, &opc, 1);
+    write(fd_server)
     return -1;
 }
 

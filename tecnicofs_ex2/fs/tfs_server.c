@@ -9,13 +9,23 @@
 
 #define MAX_CLIENTS (1)
 
-int session_id = 0;
 typedef struct client_s{
     char path[40];
     int session_id;
 } client;
 
 client clients[MAX_CLIENTS];
+
+int FREE_SESSION_ID_TABLE[MAX_CLIENTS];
+int find_session_id(){
+    for (int i = 0; i < MAX_CLIENTS; i++){
+        if (FREE_SESSION_ID_TABLE[i] == 0){
+            FREE_SESSION_ID_TABLE[i] = 1;
+            return i;
+        }
+    }
+    return -1;
+}
 
 int main(int argc, char **argv) {
 
@@ -27,7 +37,7 @@ int main(int argc, char **argv) {
     char *pipename = argv[1];
 
     if (unlink(pipename) == -1){
-        puts("server unlink error");
+        printf("server unlink error\n");
         return -1;
     }
     if(mkfifo(pipename, 0777) == -1){
@@ -36,6 +46,8 @@ int main(int argc, char **argv) {
     }
 
     printf("Starting TecnicoFS server with pipe called %s\n", pipename);
+    memset(FREE_SESSION_ID_TABLE, 0, sizeof(FREE_SESSION_ID_TABLE));
+
     
     /* TO DO */
     ssize_t bytes_read, string_read;
@@ -56,32 +68,34 @@ int main(int argc, char **argv) {
         } else if (bytes_read == 0){
             continue;
         }
-        printf("\nopt switch: %c\n", opt);
         switch(opt){
             case '1':
-                puts("antes do read");
 
                 string_read = read(fd_server, buffer, 40);
+                if (string_read == -1){
+                    printf("error reading client pipe path");
+                }
 
-                clients[session_id].session_id = session_id;
-                strcpy(clients[session_id].path, buffer);
+                int id = find_session_id();
+                clients[id].session_id = id;
+                memcpy(clients[id].path, buffer, sizeof(buffer));
 
-                puts("copied.");
-                puts(clients[session_id].path);
+                printf("%s\n", clients[id].path);
 
-                if ((fd_client = open(clients[session_id].path, O_WRONLY)) < 0){
+                if ((fd_client = open(clients[id].path, O_WRONLY)) < 0){
                     printf("error opening server -> client path: %s\n", strerror(errno));
-                    fflush(stdout);
                     return -1;
                 }
-                session_id++;
-                printf("s_id: %d\n", session_id);
+                printf("s_id: %d\n", id);
+                if (tfs_init() == -1){
+                    printf("error initializing tfs\n");
+                    return -1;
+                }
                 break;
             default:
-                puts("switch case didnt match");
+                printf("switch case didnt match\n");
                 break;
         }
-        // opt = '0';
     }
 
     return 0;
