@@ -26,17 +26,19 @@ int main(int argc, char **argv) {
 
     char *pipename = argv[1];
 
+    if (unlink(pipename) == -1){
+        puts("server unlink error");
+        return -1;
+    }
     if(mkfifo(pipename, 0777) == -1){
-        if (errno != EEXIST){
-            printf("[ERR] error creating server pipe: %s\n", strerror(errno));
-            return -1;
-        }
+        printf("[ERR] error creating server pipe: %s\n", strerror(errno));
+        return -1;
     }
 
     printf("Starting TecnicoFS server with pipe called %s\n", pipename);
     
     /* TO DO */
-    ssize_t opt_read, string_read;
+    ssize_t bytes_read, string_read;
     char buffer[40];
     char opt;
     int fd_server, fd_client;
@@ -46,21 +48,21 @@ int main(int argc, char **argv) {
     }
 
     while (1){
-        opt_read = read(fd_server, &opt, 1);
-        if (opt_read <= 0 && errno != EEXIST){
-            printf("opt: %ld\n", opt_read);
+        bytes_read = read(fd_server, &opt, 1);
+        if (bytes_read == -1){
+            printf("\nbytes read: %ld\n", bytes_read);
             printf("error reading OPCODE: %s\n", strerror(errno));
             break;
+        } else if (bytes_read == 0){
+            continue;
         }
-        printf("opt: %c\n", opt);
+        printf("\nopt switch: %c\n", opt);
         switch(opt){
             case '1':
                 puts("antes do read");
 
-                string_read = read(fd_server, buffer, 40-1);
+                string_read = read(fd_server, buffer, 40);
 
-                buffer[39] = 0; //enforce null termination
-                printf("size: %ld\n", sizeof(buffer));
                 clients[session_id].session_id = session_id;
                 strcpy(clients[session_id].path, buffer);
 

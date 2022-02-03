@@ -10,6 +10,10 @@
 int tfs_mount(char const *client_pipe_path, char const *server_pipe_path) {
     int fd_server, fd_client;
 
+    if (unlink(client_pipe_path) == -1){
+        puts("client unlink error");
+        return -1;
+    }
     if (mkfifo(client_pipe_path, 0777) == -1){
         if (errno != EEXIST){
             return -1;
@@ -21,8 +25,10 @@ int tfs_mount(char const *client_pipe_path, char const *server_pipe_path) {
     }
     char opc = '1';
     write(fd_server,  &opc, 1);
-    write(fd_server, client_pipe_path, 40-1);
-    printf("size: %ld\n", sizeof(client_pipe_path));
+    write(fd_server, client_pipe_path, 40);
+    opc = '2';
+    write(fd_server,  &opc, 1);
+
 
 
     if ((fd_client = open(client_pipe_path, O_RDONLY)) < 0){
