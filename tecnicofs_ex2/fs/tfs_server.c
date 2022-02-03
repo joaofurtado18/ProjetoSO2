@@ -132,6 +132,19 @@ int main(int argc, char **argv) {
                     return -1;
                 }
                 break;
+            case '6':
+                
+                int_read = read(fd_server, &id, sizeof(id));
+                if (int_read == -1){
+                    printf("error reading id");
+                }
+
+                int_read = read(fd_server, &flags, sizeof(flags));
+                if (int_read == -1){
+                    printf("error reading fh");
+                }
+
+                break;
 
 
             default:
