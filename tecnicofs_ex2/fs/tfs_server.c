@@ -11,16 +11,11 @@
 
 int session_id = 0;
 typedef struct client_s{
-    char* path;
+    char path[40];
     int session_id;
 } client;
 
 client clients[MAX_CLIENTS];
-
-void trataMsg (char* buf) {
-    printf("Recebeu: %s\n", buf);
-}
-
 
 int main(int argc, char **argv) {
 
@@ -33,7 +28,7 @@ int main(int argc, char **argv) {
 
     if(mkfifo(pipename, 0777) == -1){
         if (errno != EEXIST){
-            puts("[ERR] error creating server pipe");
+            printf("[ERR] error creating server pipe: %s\n", strerror(errno));
             return -1;
         }
     }
@@ -41,17 +36,50 @@ int main(int argc, char **argv) {
     printf("Starting TecnicoFS server with pipe called %s\n", pipename);
     
     /* TO DO */
-    ssize_t n;
-    char buffer[1024];
+    ssize_t opt_read, string_read;
+    char buffer[40];
+    char opt;
+    int fd_server, fd_client;
+    if ((fd_server = open(pipename, O_RDONLY)) < 0){
+        printf("%s\n", strerror(errno));
+        return -1;
+    }
+
     while (1){
-        n = read(pipename, buffer, 1024);
-        if (n <= 0) { break; }
-        trataMsg(buffer);
-        client c;
-        c.session_id = session_id;
-        session_id++;
-        strcpy(c.path, buffer);
-        n = write(c.path, "connection established\n", 25);
+        opt_read = read(fd_server, &opt, 1);
+        if (opt_read <= 0 && errno != EEXIST){
+            printf("opt: %ld\n", opt_read);
+            printf("error reading OPCODE: %s\n", strerror(errno));
+            break;
+        }
+        printf("opt: %c\n", opt);
+        switch(opt){
+            case '1':
+                puts("antes do read");
+
+                string_read = read(fd_server, buffer, 40-1);
+
+                buffer[39] = 0; //enforce null termination
+                printf("size: %ld\n", sizeof(buffer));
+                clients[session_id].session_id = session_id;
+                strcpy(clients[session_id].path, buffer);
+
+                puts("copied.");
+                puts(clients[session_id].path);
+
+                if ((fd_client = open(clients[session_id].path, O_WRONLY)) < 0){
+                    printf("error opening server -> client path: %s\n", strerror(errno));
+                    fflush(stdout);
+                    return -1;
+                }
+                session_id++;
+                printf("s_id: %d\n", session_id);
+                break;
+            default:
+                puts("switch case didnt match");
+                break;
+        }
+        // opt = '0';
     }
 
     return 0;
