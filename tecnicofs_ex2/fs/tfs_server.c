@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
 
     char *pipename = argv[1];
 
-    if (unlink(pipename) == -1){
+    if (unlink(pipename) == -1 && errno == EEXIST){
         printf("server unlink error\n");
         return -1;
     }
@@ -106,6 +106,7 @@ int main(int argc, char **argv) {
             
             case '3':
                 
+                printf("%d\n", fd_server);
                 int_read = read(fd_server, &id, sizeof(id));
                 if (int_read == -1){
                     printf("error reading id");
@@ -116,12 +117,16 @@ int main(int argc, char **argv) {
                     printf("error reading name");
                 }
 
+                printf("%d\n", fd_server);
                 int_read = read(fd_server, &flags, sizeof(flags));
                 if (int_read == -1){
-                    printf("error reading id");
+                    printf("error reading flag");
                 }
+                puts("saçv2222eee");
+
 
                 return_value = tfs_open(buffer, flags);
+                puts("saçveee");
                 if ((written = write(fd_client, &return_value , sizeof(return_value))) < 0){
                     printf("error writing ret val: %ld\n", written);
                     return -1;

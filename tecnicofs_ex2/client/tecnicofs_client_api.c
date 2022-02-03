@@ -10,7 +10,7 @@ int fd_server, fd_client, id;
 
 int tfs_mount(char const *client_pipe_path, char const *server_pipe_path) {
 
-    if (unlink(client_pipe_path) == -1){
+    if (unlink(client_pipe_path) == -1 && errno == EEXIST){
         puts("client unlink error");
         return -1;
     }
@@ -62,7 +62,11 @@ int tfs_open(char const *name, int flags) {
     write(fd_server, &opc, 1);
     write(fd_server, &id, sizeof(id));
     write(fd_server, name, sizeof(name));
+    puts("hello0");
+    sleep(0.01);
     write(fd_server, &flags, sizeof(flags));
+    puts("hello1");
+
 
     while (1){
         if ((bytes_read = read(fd_client, &ret_value, sizeof(ret_value))) == -1){
