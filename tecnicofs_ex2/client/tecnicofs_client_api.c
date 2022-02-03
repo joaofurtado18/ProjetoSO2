@@ -37,16 +37,16 @@ int tfs_mount(char const *client_pipe_path, char const *server_pipe_path) {
         return -1;
     }
 
-    /*int bytes_read;
+    int bytes_read;
     while (1){
-        if ((bytes_read = read(client_pipe_path, &id, sizeof(int))) == -1){
+        if ((bytes_read = read(fd_client, &id, sizeof(id))) == -1){
             printf("error reading id\n");
             break;
         } else if (bytes_read == 0){ continue; }
         else
             break;
     }
-    printf("bytes read: %d\n", bytes_read);*/
+    printf("session id: %d\n", id);
     return 0;
 }
 
@@ -58,8 +58,23 @@ int tfs_unmount() {
 int tfs_open(char const *name, int flags) {
     /* TODO: Implement this */
     char opc = '3';
+    int ret_value, bytes_read;
     write(fd_server, &opc, 1);
-    return -1;
+    write(fd_server, &id, sizeof(id));
+    write(fd_server, name, sizeof(name));
+    write(fd_server, &flags, sizeof(flags));
+
+    while (1){
+        if ((bytes_read = read(fd_client, &ret_value, sizeof(ret_value))) == -1){
+            printf("error reading id\n");
+            break;
+        } else if (bytes_read == 0){ continue; }
+        else
+            break;
+    }
+    
+
+    return ret_value;
 }
 
 int tfs_close(int fhandle) {

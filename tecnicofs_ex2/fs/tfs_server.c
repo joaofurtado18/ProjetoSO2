@@ -58,7 +58,8 @@ int main(int argc, char **argv) {
     ssize_t bytes_read, string_read;
     char buffer[40];
     char opt;
-    int fd_server, fd_client;
+    int fd_server, fd_client, int_read, id, flags, return_value;
+    ssize_t written;
     if ((fd_server = open(pipename, O_RDONLY)) < 0){
         printf("%s\n", strerror(errno));
         return -1;
@@ -81,7 +82,7 @@ int main(int argc, char **argv) {
                     printf("error reading client pipe path");
                 }
 
-                int id = find_session_id();
+                id = find_session_id();
                 clients[id].session_id = id;
                 memcpy(clients[id].path, buffer, sizeof(buffer));
 
@@ -95,15 +96,41 @@ int main(int argc, char **argv) {
                 printf("s_id: %d\n", id);
 
 
-                /*int written;
-                if ((written = write(fd_client, &id ,sizeof(int))) < 0){
-                    printf("error writing id: %d\n", written);
+                if ((written = write(fd_client, &id , sizeof(id))) < 0){
+                    printf("error writing id: %ld\n", written);
                     return -1;
-                }/*
+                }
 
                 break;
+
+            
+            case '3':
+                
+                int_read = read(fd_server, &id, sizeof(id));
+                if (int_read == -1){
+                    printf("error reading id");
+                }
+
+                string_read = read(fd_server, buffer, 40);
+                if (string_read == -1){
+                    printf("error reading name");
+                }
+
+                int_read = read(fd_server, &flags, sizeof(flags));
+                if (int_read == -1){
+                    printf("error reading id");
+                }
+
+                return_value = tfs_open(buffer, flags);
+                if ((written = write(fd_client, &return_value , sizeof(return_value))) < 0){
+                    printf("error writing ret val: %ld\n", written);
+                    return -1;
+                }
+                break;
+
+
             default:
-                printf("switch case didnt match\n");
+                printf("switch case didnt match, opt: %c\n", opt);
                 break;
         }
     }
