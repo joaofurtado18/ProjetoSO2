@@ -44,6 +44,11 @@ int main(int argc, char **argv) {
         printf("[ERR] error creating server pipe: %s\n", strerror(errno));
         return -1;
     }
+    
+    if (tfs_init() == -1){
+        printf("error initializing tfs\n");
+        return -1;
+    }
 
     printf("Starting TecnicoFS server with pipe called %s\n", pipename);
     memset(FREE_SESSION_ID_TABLE, 0, sizeof(FREE_SESSION_ID_TABLE));
@@ -86,11 +91,16 @@ int main(int argc, char **argv) {
                     printf("error opening server -> client path: %s\n", strerror(errno));
                     return -1;
                 }
+
                 printf("s_id: %d\n", id);
-                if (tfs_init() == -1){
-                    printf("error initializing tfs\n");
+
+
+                /*int written;
+                if ((written = write(fd_client, &id ,sizeof(int))) < 0){
+                    printf("error writing id: %d\n", written);
                     return -1;
-                }
+                }/*
+
                 break;
             default:
                 printf("switch case didnt match\n");

@@ -6,7 +6,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <errno.h>
-int fd_server, fd_client;
+int fd_server, fd_client, id;
 
 int tfs_mount(char const *client_pipe_path, char const *server_pipe_path) {
 
@@ -15,9 +15,8 @@ int tfs_mount(char const *client_pipe_path, char const *server_pipe_path) {
         return -1;
     }
     if (mkfifo(client_pipe_path, 0777) == -1){
-        if (errno != EEXIST){
-            return -1;
-        }
+        printf("mkfifo error\n");
+        return -1;
     }
     if ((fd_server = open(server_pipe_path, O_WRONLY)) < 0){
         printf("error opening server: %s\n", strerror(errno));
@@ -38,6 +37,16 @@ int tfs_mount(char const *client_pipe_path, char const *server_pipe_path) {
         return -1;
     }
 
+    /*int bytes_read;
+    while (1){
+        if ((bytes_read = read(client_pipe_path, &id, sizeof(int))) == -1){
+            printf("error reading id\n");
+            break;
+        } else if (bytes_read == 0){ continue; }
+        else
+            break;
+    }
+    printf("bytes read: %d\n", bytes_read);*/
     return 0;
 }
 
@@ -50,7 +59,6 @@ int tfs_open(char const *name, int flags) {
     /* TODO: Implement this */
     char opc = '3';
     write(fd_server, &opc, 1);
-    write(fd_server)
     return -1;
 }
 
