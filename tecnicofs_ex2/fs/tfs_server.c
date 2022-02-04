@@ -127,6 +127,27 @@ int main(int argc, char **argv) {
             }
             break;
 
+        case '4':
+            printf("Case 4\n");
+            fflush(stdout);
+            int_read = read(fd_server, &id, sizeof(int));
+            if (int_read == -1) {
+                printf("error reading id");
+            }
+
+            int_read = read(fd_server, fhandle, sizeof(fhandle));
+            if (int_read == -1) {
+                printf("error reading fhandle");
+            }
+
+            return_value = tfs_close(fhandle);
+            if ((written = write(fd_client, &return_value,
+                                 sizeof(return_value))) < 0) {
+                printf("error writing ret val: %ld\n", written);
+                return -1;
+            }
+            break;
+
         case '5':
             int_read = read(fd_server, &id, sizeof(int));
             if (int_read == -1) {
@@ -149,8 +170,7 @@ int main(int argc, char **argv) {
             }
 
             return_value = tfs_write(fhandle, buffer, len);
-            if ((written = write(fd_client, &return_value,
-                                 sizeof(int))) < 0) {
+            if ((written = write(fd_client, &return_value, sizeof(int))) < 0) {
                 printf("error writing ret val: %ld\n", written);
                 return -1;
             }
