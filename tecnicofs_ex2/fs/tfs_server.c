@@ -167,7 +167,7 @@ int main(int argc, char **argv) {
                 printf("error reading len");
             }
 
-            return_value = tfs_write(fhandle, buffer, len);
+            return_value = tfs_write(fhandle, buffer_write, len);
             if ((written = write(fd_client, &return_value, sizeof(int))) < 0) {
                 printf("error writing ret val: %ld\n", written);
                 return -1;
