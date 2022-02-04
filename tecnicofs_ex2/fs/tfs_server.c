@@ -176,15 +176,31 @@ int main(int argc, char **argv) {
 
         case '6':
 
-            int_read = read(fd_server, &id, sizeof(id));
+            int_read = read(fd_server, &id, sizeof(int));
             if (int_read == -1) {
                 printf("error reading id");
             }
 
-            int_read = read(fd_server, &flags, sizeof(flags));
+            int_read = read(fd_server, &fhandle, sizeof(int));
             if (int_read == -1) {
                 printf("error reading fh");
             }
+
+            len_read = read(fd_server, &len, sizeof(size_t));
+            if (len_read == -1) {
+                printf("error reading len");
+            }
+            memset(buffer_write, 0, 1024);
+            return_value = tfs_read(fhandle, buffer_write, len);
+            if ((written = write(fd_client, &return_value, sizeof(int))) < 0) {
+                printf("error writing ret val: %ld\n", written);
+                return -1;
+            }
+            if ((written = write(fd_client, &buffer_write, 1024)) < 0) {
+                printf("error writing ret val: %ld\n", written);
+                return -1;
+            }
+            break;
 
             break;
         default:

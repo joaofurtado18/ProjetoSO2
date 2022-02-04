@@ -127,9 +127,40 @@ ssize_t tfs_write(int fhandle, void const *buffer, size_t len) {
 
 ssize_t tfs_read(int fhandle, void *buffer, size_t len) {
     /* TODO: Implement this */
+    char opc = '6';
+    int ret_value, bytes_read;
+    write(fd_server, &opc, 1);
+    write(fd_server, &id, sizeof(int));
+    write(fd_server, &fhandle, sizeof(int));
+    write(fd_server, &len, sizeof(size_t));
 
-    
-    return -1;
+    while (1) {
+        if ((bytes_read = read(fd_client, &ret_value, sizeof(ret_value))) ==
+            -1) {
+            printf("error reading bytes\n");
+            return -1;
+        } else if (bytes_read == 0) {
+            continue;
+        } else
+            break;
+    }
+    char buffer_write[1024];
+    while (1) {
+        if ((bytes_read = read(fd_client, &buffer_write, 1024)) ==
+            -1) {
+            printf("error reading id\n");
+            break;
+        } else if (bytes_read == 0) {
+            continue;
+        } else
+            break;
+    }
+
+    //char read_buffer[return_value];
+    memcpy(buffer, buffer_write, ret_value);
+    puts(buffer_write);
+    puts(buffer);
+    return ret_value;
 }
 
 int tfs_shutdown_after_all_closed() {
