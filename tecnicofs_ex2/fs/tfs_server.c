@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
             continue;
         }
         switch (opt) {
-        case '1':
+        case TFS_OP_CODE_MOUNT:
 
             string_read = read(fd_server, buffer, MAX_NAME);
             if (string_read == -1) {
@@ -100,7 +100,7 @@ int main(int argc, char **argv) {
             }
 
             break;
-        case '2':
+        case TFS_OP_CODE_UNMOUNT:
             int_read = read(fd_server, &id, sizeof(int));
             if (int_read == -1) {
                 printf("error reading id");
@@ -112,7 +112,7 @@ int main(int argc, char **argv) {
             }
             break;
 
-        case '3':
+        case TFS_OP_CODE_OPEN:
 
             int_read = read(fd_server, &id, sizeof(int));
             if (int_read == -1) {
@@ -137,7 +137,7 @@ int main(int argc, char **argv) {
             }
             break;
 
-        case '4':
+        case TFS_OP_CODE_CLOSE:
             int_read = read(fd_server, &id, sizeof(int));
             if (int_read == -1) {
                 printf("error reading id");
@@ -156,7 +156,7 @@ int main(int argc, char **argv) {
             }
             break;
 
-        case '5':
+        case TFS_OP_CODE_WRITE:
             int_read = read(fd_server, &id, sizeof(int));
             if (int_read == -1) {
                 printf("error reading id");
@@ -185,7 +185,7 @@ int main(int argc, char **argv) {
             }
             break;
 
-        case '6':
+        case TFS_OP_CODE_READ:
 
             int_read = read(fd_server, &id, sizeof(int));
             if (int_read == -1) {
@@ -209,6 +209,14 @@ int main(int argc, char **argv) {
             }
             if ((written = write(clients[id].fd, &buffer_write, BLOCK_SIZE)) <
                 0) {
+                printf("error writing ret val: %ld\n", written);
+                return -1;
+            }
+            break;
+        case TFS_OP_CODE_SHUTDOWN_AFTER_ALL_CLOSED:
+            return_value = tfs_shutdown_after_all_closed();
+            if ((written = write(clients[id].fd, &return_value,
+                                 sizeof(return_value))) < 0) {
                 printf("error writing ret val: %ld\n", written);
                 return -1;
             }

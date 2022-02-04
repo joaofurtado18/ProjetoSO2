@@ -177,5 +177,20 @@ ssize_t tfs_read(int fhandle, void *buffer, size_t len) {
 
 int tfs_shutdown_after_all_closed() {
     /* TODO: Implement this */
+    char opc = '6';
+    int ret_value, bytes_read;
+    write(fd_server, &opc, 1);
+    write(fd_server, &id, sizeof(int));
+
+    while (1) {
+        if ((bytes_read = read(fd_client, &ret_value, sizeof(ret_value))) ==
+            -1) {
+            printf("error reading bytes\n");
+            return -1;
+        } else if (bytes_read == 0) {
+            continue;
+        } else
+            break;
+    }
     return -1;
 }
