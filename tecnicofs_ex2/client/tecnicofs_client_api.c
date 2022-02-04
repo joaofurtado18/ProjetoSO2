@@ -6,6 +6,11 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+#define MAX_NAME (40)
+#define PERMISSION_FOR_ALL (0777)
+#define BLOCK_SIZE (1024)
+
 int fd_server, fd_client, id;
 
 int tfs_mount(char const *client_pipe_path, char const *server_pipe_path) {
@@ -14,7 +19,7 @@ int tfs_mount(char const *client_pipe_path, char const *server_pipe_path) {
         puts("client unlink error");
         return -1;
     }
-    if (mkfifo(client_pipe_path, 0777) == -1) {
+    if (mkfifo(client_pipe_path, PERMISSION_FOR_ALL) == -1) {
         printf("mkfifo error\n");
         return -1;
     }
@@ -27,7 +32,7 @@ int tfs_mount(char const *client_pipe_path, char const *server_pipe_path) {
         printf("error writing opcode: %d\n");
         return -1;
     }
-    if (write(fd_server, client_pipe_path, 40) < 0) {
+    if (write(fd_server, client_pipe_path, MAX_NAME) < 0) {
         printf("error writing client_pipe_path: %d\n");
         return -1;
     }
@@ -70,7 +75,7 @@ int tfs_open(char const *name, int flags) {
     int ret_value, bytes_read;
     write(fd_server, &opc, 1);
     write(fd_server, &id, sizeof(id));
-    write(fd_server, name, 40);
+    write(fd_server, name, MAX_NAME);
     write(fd_server, &flags, sizeof(flags));
 
     while (1) {
@@ -117,7 +122,7 @@ ssize_t tfs_write(int fhandle, void const *buffer, size_t len) {
     write(fd_server, &opc, 1);
     write(fd_server, &id, sizeof(id));
     write(fd_server, &fhandle, sizeof(fhandle));
-    write(fd_server, buffer, 1024);
+    write(fd_server, buffer, BLOCK_SIZE);
     write(fd_server, &len, sizeof(len));
 
     while (1) {
@@ -152,9 +157,9 @@ ssize_t tfs_read(int fhandle, void *buffer, size_t len) {
         } else
             break;
     }
-    char buffer_write[1024];
+    char buffer_write[BLOCK_SIZE];
     while (1) {
-        if ((bytes_read = read(fd_client, &buffer_write, 1024)) == -1) {
+        if ((bytes_read = read(fd_client, &buffer_write, BLOCK_SIZE)) == -1) {
             printf("error reading id\n");
             break;
         } else if (bytes_read == 0) {

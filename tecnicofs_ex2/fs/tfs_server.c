@@ -9,6 +9,7 @@
 
 #define MAX_CLIENTS (1)
 #define MAX_NAME (40)
+#define PERMISSION_FOR_ALL (0777)
 
 typedef struct client_s {
     int fd;
@@ -41,7 +42,7 @@ int main(int argc, char **argv) {
         printf("server unlink error\n");
         return -1;
     }
-    if (mkfifo(pipename, 0777) == -1) {
+    if (mkfifo(pipename, PERMISSION_FOR_ALL) == -1) {
         printf("[ERR] error creating server pipe: %s\n", strerror(errno));
         return -1;
     }
