@@ -53,7 +53,15 @@ int tfs_mount(char const *client_pipe_path, char const *server_pipe_path) {
 
 int tfs_unmount() {
     /* TODO: Implement this */
-    return -1;
+    char opc = '2';
+    write(fd_client, &opc, 1);
+    write(fd_client, &id, sizeof(int));
+
+    if(close(fd_client)== -1){
+        printf("error closing client pipe\n");
+        return -1;
+    }
+    return 0;
 }
 
 int tfs_open(char const *name, int flags) {

@@ -99,6 +99,17 @@ int main(int argc, char **argv) {
             }
 
             break;
+        case '2':
+            int_read = read(fd_server, &id, sizeof(int));
+            if (int_read == -1) {
+                printf("error reading id");
+            }
+            FREE_SESSION_ID_TABLE[id] = 0;
+            if (close(clients[id].fd) == -1) {
+                printf("error closing client pipe\n");
+                return -1;
+            }
+            break;
 
         case '3':
 
