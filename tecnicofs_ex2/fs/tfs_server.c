@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
 
     /* TO DO */
     ssize_t bytes_read, string_read;
-    char buffer[40];
+    char buffer[40], buffer_write[1024];
     char opt;
     int fd_server, fd_client, int_read, id, flags, return_value, fhandle;
     ssize_t written, len, len_read;
@@ -128,29 +128,29 @@ int main(int argc, char **argv) {
             break;
 
         case '5':
-            int_read = read(fd_server, &id, sizeof(id));
+            int_read = read(fd_server, &id, sizeof(int));
             if (int_read == -1) {
                 printf("error reading id");
             }
 
-            int_read = read(fd_server, &fhandle, sizeof(fhandle));
+            int_read = read(fd_server, &fhandle, sizeof(int));
             if (int_read == -1) {
                 printf("error reading fhandle");
             }
 
-            string_read = read(fd_server, buffer, sizeof(buffer));
+            string_read = read(fd_server, buffer_write, 1024);
             if (string_read == -1) {
                 printf("error reading buffer");
             }
 
-            len_read = read(fd_server, &len, sizeof(len));
+            len_read = read(fd_server, &len, sizeof(size_t));
             if (len_read == -1) {
                 printf("error reading len");
             }
 
             return_value = tfs_write(fhandle, buffer, len);
             if ((written = write(fd_client, &return_value,
-                                 sizeof(return_value))) < 0) {
+                                 sizeof(int))) < 0) {
                 printf("error writing ret val: %ld\n", written);
                 return -1;
             }

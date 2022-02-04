@@ -92,9 +92,10 @@ ssize_t tfs_write(int fhandle, void const *buffer, size_t len) {
     write(fd_server, &opc, 1);
     write(fd_server, &id, sizeof(id));
     write(fd_server, &fhandle, sizeof(fhandle));
-    write(fd_server, buffer, sizeof(buffer));
+    write(fd_server, buffer, 1024);
     write(fd_server, &len, sizeof(len));
 
+    printf("Antes do return api\n");
     while (1) {
         if ((bytes_read = read(fd_client, &ret_value, sizeof(ret_value))) ==
             -1) {
@@ -105,12 +106,36 @@ ssize_t tfs_write(int fhandle, void const *buffer, size_t len) {
         } else
             break;
     }
-    printf("Antes do return api\n");
     return ret_value;
 }
 
 ssize_t tfs_read(int fhandle, void *buffer, size_t len) {
-    /* TODO: Implement this */
+    char opc = '6';
+    int ret_value, bytes_read;
+    write(fd_server, &opc, 1);
+    write(fd_server, &id, sizeof(int));
+    write(fd_server, &fhandle, sizeof(int));
+    write(fd_server, buffer, 1024);
+    write(fd_server, &len, sizeof(size_t));
+
+    while (1){
+        if ((bytes_read = read(fd_client, &ret_value, sizeof(int))) == -1){
+            printf("error reading bytes read\n");
+            break;
+        } else if (bytes_read == 0){ continue; }
+        else
+            break;
+    }
+    if(ret_value == -1) {return -1;}
+    char read_ret[ret_value];
+    while (1){
+        if ((bytes_read = read(fd_client, buffer, ret_value) == -1)){
+            printf("error reading buffer\n");
+            break;
+        } else if (bytes_read == 0){ continue; }
+        else
+            break;
+    }
     return -1;
 }
 
