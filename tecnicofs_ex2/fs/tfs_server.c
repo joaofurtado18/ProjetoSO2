@@ -107,7 +107,7 @@ int main(int argc, char **argv) {
             case '3':
                 
                 printf("%d\n", fd_server);
-                int_read = read(fd_server, &id, sizeof(id));
+                int_read = read(fd_server, &id, sizeof(int));
                 if (int_read == -1){
                     printf("error reading id");
                 }
@@ -118,7 +118,7 @@ int main(int argc, char **argv) {
                 }
 
                 printf("%d\n", fd_server);
-                int_read = read(fd_server, &flags, sizeof(flags));
+                int_read = read(fd_server, &flags, sizeof(int));
                 if (int_read == -1){
                     printf("error reading flag");
                 }

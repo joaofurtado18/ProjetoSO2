@@ -61,9 +61,9 @@ int tfs_open(char const *name, int flags) {
     int ret_value, bytes_read;
     write(fd_server, &opc, 1);
     write(fd_server, &id, sizeof(id));
-    write(fd_server, name, sizeof(name));
+    write(fd_server, name, 40);
     puts("hello0");
-    sleep(0.01);
+    sleep(0.05);
     write(fd_server, &flags, sizeof(flags));
     puts("hello1");
 
