@@ -29,11 +29,11 @@ int tfs_mount(char const *client_pipe_path, char const *server_pipe_path) {
     }
     char opc = '1';
     if (write(fd_server, &opc, 1) < 0) {
-        printf("error writing opcode: %d\n");
+        printf("error writing opcode");
         return -1;
     }
     if (write(fd_server, client_pipe_path, MAX_NAME) < 0) {
-        printf("error writing client_pipe_path: %d\n");
+        printf("error writing client_pipe_path");
         return -1;
     }
 
@@ -44,7 +44,7 @@ int tfs_mount(char const *client_pipe_path, char const *server_pipe_path) {
 
     int bytes_read;
     while (1) {
-        if ((bytes_read = read(fd_client, &id, sizeof(id))) == -1) {
+        if ((bytes_read = (int)read(fd_client, &id, sizeof(id))) == -1) {
             printf("error reading id\n");
             break;
         } else if (bytes_read == 0) {
@@ -59,9 +59,10 @@ int tfs_mount(char const *client_pipe_path, char const *server_pipe_path) {
 int tfs_unmount() {
     /* TODO: Implement this */
     char opc = '2';
-    write(fd_client, &opc, 1);
-    write(fd_client, &id, sizeof(int));
-
+    if (write(fd_client, &opc, 1) == -1)
+        return -1;
+    if (write(fd_client, &id, sizeof(int) == -1))
+        return -1;
     if (close(fd_client) == -1) {
         printf("error closing client pipe\n");
         return -1;
@@ -73,14 +74,18 @@ int tfs_open(char const *name, int flags) {
     /* TODO: Implement this */
     char opc = '3';
     int ret_value, bytes_read;
-    write(fd_server, &opc, 1);
-    write(fd_server, &id, sizeof(id));
-    write(fd_server, name, MAX_NAME);
-    write(fd_server, &flags, sizeof(flags));
+    if (write(fd_server, &opc, 1) == -1)
+        return -1;
+    if (write(fd_server, &id, sizeof(id)) == -1)
+        return -1;
+    if (write(fd_server, name, MAX_NAME) == -1)
+        return -1;
+    if (write(fd_server, &flags, sizeof(flags)) == -1)
+        return -1;
 
     while (1) {
-        if ((bytes_read = read(fd_client, &ret_value, sizeof(ret_value))) ==
-            -1) {
+        if ((bytes_read =
+                 (int)read(fd_client, &ret_value, sizeof(ret_value))) == -1) {
             printf("error reading id\n");
             break;
         } else if (bytes_read == 0) {
@@ -96,13 +101,16 @@ int tfs_close(int fhandle) {
     printf("Inicio do close\n");
     char opc = '4';
     int ret_value, bytes_read;
-    write(fd_server, &opc, 1);
-    write(fd_server, &id, sizeof(id));
-    write(fd_server, &fhandle, sizeof(fhandle));
+    if (write(fd_server, &opc, 1) == -1)
+        return -1;
+    if (write(fd_server, &id, sizeof(id)) == -1)
+        return -1;
+    if (write(fd_server, &fhandle, sizeof(fhandle)) == -1)
+        return -1;
 
     while (1) {
-        if ((bytes_read = read(fd_client, &ret_value, sizeof(ret_value))) ==
-            -1) {
+        if ((bytes_read =
+                 (int)read(fd_client, &ret_value, sizeof(ret_value))) == -1) {
             printf("error reading id\n");
             break;
         } else if (bytes_read == 0) {
@@ -119,15 +127,20 @@ ssize_t tfs_write(int fhandle, void const *buffer, size_t len) {
     /* TODO: Implement this */
     char opc = '5';
     int ret_value, bytes_read;
-    write(fd_server, &opc, 1);
-    write(fd_server, &id, sizeof(id));
-    write(fd_server, &fhandle, sizeof(fhandle));
-    write(fd_server, buffer, BLOCK_SIZE);
-    write(fd_server, &len, sizeof(len));
+    if (write(fd_server, &opc, 1) == -1)
+        return -1;
+    if (write(fd_server, &id, sizeof(id)) == -1)
+        return -1;
+    if (write(fd_server, &fhandle, sizeof(fhandle)) == -1)
+        return -1;
+    if (write(fd_server, buffer, BLOCK_SIZE) == -1)
+        return -1;
+    if (write(fd_server, &len, sizeof(len)) == -1)
+        return -1;
 
     while (1) {
-        if ((bytes_read = read(fd_client, &ret_value, sizeof(ret_value))) ==
-            -1) {
+        if ((bytes_read =
+                 (int)read(fd_client, &ret_value, sizeof(ret_value))) == -1) {
             printf("error reading id\n");
             break;
         } else if (bytes_read == 0) {
@@ -142,14 +155,18 @@ ssize_t tfs_read(int fhandle, void *buffer, size_t len) {
     /* TODO: Implement this */
     char opc = '6';
     int ret_value, bytes_read;
-    write(fd_server, &opc, 1);
-    write(fd_server, &id, sizeof(int));
-    write(fd_server, &fhandle, sizeof(int));
-    write(fd_server, &len, sizeof(size_t));
+    if (write(fd_server, &opc, 1) == -1)
+        return -1;
+    if (write(fd_server, &id, sizeof(int)) == -1)
+        return -1;
+    if (write(fd_server, &fhandle, sizeof(int)) == -1)
+        return -1;
+    if (write(fd_server, &len, sizeof(size_t)) == -1)
+        return -1;
 
     while (1) {
-        if ((bytes_read = read(fd_client, &ret_value, sizeof(ret_value))) ==
-            -1) {
+        if ((bytes_read =
+                 (int)read(fd_client, &ret_value, sizeof(ret_value))) == -1) {
             printf("error reading bytes\n");
             return -1;
         } else if (bytes_read == 0) {
@@ -159,7 +176,8 @@ ssize_t tfs_read(int fhandle, void *buffer, size_t len) {
     }
     char buffer_write[BLOCK_SIZE];
     while (1) {
-        if ((bytes_read = read(fd_client, &buffer_write, BLOCK_SIZE)) == -1) {
+        if ((bytes_read = (int)read(fd_client, &buffer_write, BLOCK_SIZE)) ==
+            -1) {
             printf("error reading id\n");
             break;
         } else if (bytes_read == 0) {
@@ -168,8 +186,7 @@ ssize_t tfs_read(int fhandle, void *buffer, size_t len) {
             break;
     }
 
-    // char read_buffer[return_value];
-    memcpy(buffer, buffer_write, ret_value);
+    memcpy(buffer, buffer_write, (size_t)ret_value);
     puts(buffer_write);
     puts(buffer);
     return ret_value;
@@ -179,12 +196,14 @@ int tfs_shutdown_after_all_closed() {
     /* TODO: Implement this */
     char opc = '6';
     int ret_value, bytes_read;
-    write(fd_server, &opc, 1);
-    write(fd_server, &id, sizeof(int));
+    if (write(fd_server, &opc, 1) == -1)
+        return -1;
+    if (write(fd_server, &id, sizeof(int)) == -1)
+        return -1;
 
     while (1) {
-        if ((bytes_read = read(fd_client, &ret_value, sizeof(ret_value))) ==
-            -1) {
+        if ((bytes_read =
+                 (int)read(fd_client, &ret_value, sizeof(ret_value))) == -1) {
             printf("error reading bytes\n");
             return -1;
         } else if (bytes_read == 0) {

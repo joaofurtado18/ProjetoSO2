@@ -55,18 +55,18 @@ int main(int argc, char **argv) {
     printf("Starting TecnicoFS server with pipe called %s\n", pipename);
     memset(FREE_SESSION_ID_TABLE, FREE, sizeof(FREE_SESSION_ID_TABLE));
 
-    ssize_t bytes_read, string_read;
+    ssize_t bytes_read, string_read, written, len_read;
+    size_t len;
     char buffer[MAX_NAME], buffer_write[BLOCK_SIZE];
     char opt;
     int fd_server, fd_client, int_read, id, flags, return_value, fhandle;
-    ssize_t written, len, len_read;
     if ((fd_server = open(pipename, O_RDONLY)) < 0) {
         printf("%s\n", strerror(errno));
         return -1;
     }
 
     while (1) {
-        bytes_read = read(fd_server, &opt, 1);
+        bytes_read = (int)read(fd_server, &opt, 1);
         if (bytes_read == -1) {
             printf("\nbytes read: %ld\n", bytes_read);
             printf("error reading OPCODE: %s\n", strerror(errno));
@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
         switch (opt) {
         case TFS_OP_CODE_MOUNT:
 
-            string_read = read(fd_server, buffer, MAX_NAME);
+            string_read = (int)read(fd_server, buffer, MAX_NAME);
             if (string_read == -1) {
                 printf("error reading client pipe path");
             }
@@ -101,7 +101,7 @@ int main(int argc, char **argv) {
 
             break;
         case TFS_OP_CODE_UNMOUNT:
-            int_read = read(fd_server, &id, sizeof(int));
+            int_read = (int)read(fd_server, &id, sizeof(int));
             if (int_read == -1) {
                 printf("error reading id");
             }
@@ -114,17 +114,17 @@ int main(int argc, char **argv) {
 
         case TFS_OP_CODE_OPEN:
 
-            int_read = read(fd_server, &id, sizeof(int));
+            int_read = (int)read(fd_server, &id, sizeof(int));
             if (int_read == -1) {
                 printf("error reading id");
             }
 
-            string_read = read(fd_server, buffer, MAX_NAME);
+            string_read = (int)read(fd_server, buffer, MAX_NAME);
             if (string_read == -1) {
                 printf("error reading name");
             }
 
-            int_read = read(fd_server, &flags, sizeof(int));
+            int_read = (int)read(fd_server, &flags, sizeof(int));
             if (int_read == -1) {
                 printf("error reading flag");
             }
@@ -138,12 +138,12 @@ int main(int argc, char **argv) {
             break;
 
         case TFS_OP_CODE_CLOSE:
-            int_read = read(fd_server, &id, sizeof(int));
+            int_read = (int)read(fd_server, &id, sizeof(int));
             if (int_read == -1) {
                 printf("error reading id");
             }
 
-            int_read = read(fd_server, &fhandle, sizeof(int));
+            int_read = (int)read(fd_server, &fhandle, sizeof(int));
             if (int_read == -1) {
                 printf("error reading fhandle");
             }
@@ -157,27 +157,27 @@ int main(int argc, char **argv) {
             break;
 
         case TFS_OP_CODE_WRITE:
-            int_read = read(fd_server, &id, sizeof(int));
+            int_read = (int)read(fd_server, &id, sizeof(int));
             if (int_read == -1) {
                 printf("error reading id");
             }
 
-            int_read = read(fd_server, &fhandle, sizeof(int));
+            int_read = (int)read(fd_server, &fhandle, sizeof(int));
             if (int_read == -1) {
                 printf("error reading fhandle");
             }
 
-            string_read = read(fd_server, buffer_write, BLOCK_SIZE);
+            string_read = (int)read(fd_server, buffer_write, BLOCK_SIZE);
             if (string_read == -1) {
                 printf("error reading buffer");
             }
 
-            len_read = read(fd_server, &len, sizeof(size_t));
+            len_read = (int)read(fd_server, &len, sizeof(size_t));
             if (len_read == -1) {
                 printf("error reading len");
             }
 
-            return_value = tfs_write(fhandle, buffer_write, len);
+            return_value = (int)tfs_write(fhandle, buffer_write, len);
             if ((written = write(clients[id].fd, &return_value, sizeof(int))) <
                 0) {
                 printf("error writing ret val: %ld\n", written);
@@ -187,22 +187,22 @@ int main(int argc, char **argv) {
 
         case TFS_OP_CODE_READ:
 
-            int_read = read(fd_server, &id, sizeof(int));
+            int_read = (int)read(fd_server, &id, sizeof(int));
             if (int_read == -1) {
                 printf("error reading id");
             }
 
-            int_read = read(fd_server, &fhandle, sizeof(int));
+            int_read = (int)read(fd_server, &fhandle, sizeof(int));
             if (int_read == -1) {
                 printf("error reading fh");
             }
 
-            len_read = read(fd_server, &len, sizeof(size_t));
+            len_read = (int)read(fd_server, &len, sizeof(size_t));
             if (len_read == -1) {
                 printf("error reading len");
             }
             memset(buffer_write, 0, BLOCK_SIZE);
-            return_value = tfs_read(fhandle, buffer_write, len);
+            return_value = (int)tfs_read(fhandle, buffer_write, len);
             if ((written = write(fd_client, &return_value, sizeof(int))) < 0) {
                 printf("error writing ret val: %ld\n", written);
                 return -1;
@@ -214,13 +214,13 @@ int main(int argc, char **argv) {
             }
             break;
         case TFS_OP_CODE_SHUTDOWN_AFTER_ALL_CLOSED:
-            return_value = tfs_shutdown_after_all_closed();
+            return_value = tfs_destroy_after_all_closed();
             if ((written = write(clients[id].fd, &return_value,
                                  sizeof(return_value))) < 0) {
                 printf("error writing ret val: %ld\n", written);
                 return -1;
             }
-            break;
+            exit(EXIT_SUCCESS);
         default:
             printf("switch case didnt match, opt: %c\n", opt);
             break;
