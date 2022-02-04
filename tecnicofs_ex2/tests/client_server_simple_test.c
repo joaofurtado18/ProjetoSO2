@@ -22,12 +22,10 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    puts("mount");
     assert(tfs_mount(argv[1], argv[2]) == 0);
 
     f = tfs_open(path, TFS_O_CREAT);
     assert(f != -1);
-
     r = tfs_write(f, str, strlen(str));
     assert(r == strlen(str));
 

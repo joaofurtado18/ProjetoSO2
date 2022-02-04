@@ -128,14 +128,12 @@ int main(int argc, char **argv) {
             break;
 
         case '4':
-            printf("Case 4\n");
-            fflush(stdout);
             int_read = read(fd_server, &id, sizeof(int));
             if (int_read == -1) {
                 printf("error reading id");
             }
 
-            int_read = read(fd_server, fhandle, sizeof(fhandle));
+            int_read = read(fd_server, &fhandle, sizeof(int));
             if (int_read == -1) {
                 printf("error reading fhandle");
             }
