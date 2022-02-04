@@ -27,7 +27,7 @@ int tfs_mount(char const *client_pipe_path, char const *server_pipe_path) {
         printf("error opening server: %s\n", strerror(errno));
         return -1;
     }
-    char opc = '1';
+    char opc = TFS_OP_CODE_MOUNT;
     if (write(fd_server, &opc, 1) < 0) {
         printf("error writing opcode");
         return -1;
@@ -57,7 +57,7 @@ int tfs_mount(char const *client_pipe_path, char const *server_pipe_path) {
 
 int tfs_unmount() {
     /* TODO: Implement this */
-    char opc = '2';
+    char opc = TFS_OP_CODE_UNMOUNT;
     if (write(fd_server, &opc, 1) == -1){
         return -1;
     }
@@ -72,7 +72,7 @@ int tfs_unmount() {
 
 int tfs_open(char const *name, int flags) {
     /* TODO: Implement this */
-    char opc = '3';
+    char opc = TFS_OP_CODE_OPEN;
     int ret_value, bytes_read;
     if (write(fd_server, &opc, 1) == -1)
         return -1;
@@ -98,7 +98,7 @@ int tfs_open(char const *name, int flags) {
 }
 
 int tfs_close(int fhandle) {
-    char opc = '4';
+    char opc = TFS_OP_CODE_CLOSE;
     int ret_value, bytes_read;
     if (write(fd_server, &opc, 1) == -1)
         return -1;
@@ -124,7 +124,7 @@ int tfs_close(int fhandle) {
 ssize_t tfs_write(int fhandle, void const *buffer, size_t len) {
 
     /* TODO: Implement this */
-    char opc = '5';
+    char opc = TFS_OP_CODE_WRITE;
     int ret_value, bytes_read;
     if (write(fd_server, &opc, 1) == -1)
         return -1;
@@ -152,7 +152,7 @@ ssize_t tfs_write(int fhandle, void const *buffer, size_t len) {
 
 ssize_t tfs_read(int fhandle, void *buffer, size_t len) {
     /* TODO: Implement this */
-    char opc = '6';
+    char opc = TFS_OP_CODE_READ;
     int ret_value, bytes_read;
     if (write(fd_server, &opc, 1) == -1)
         return -1;
@@ -191,7 +191,7 @@ ssize_t tfs_read(int fhandle, void *buffer, size_t len) {
 
 int tfs_shutdown_after_all_closed() {
     /* TODO: Implement this */
-    char opc = '6';
+    char opc = TFS_OP_CODE_SHUTDOWN_AFTER_ALL_CLOSED;
     int ret_value, bytes_read;
     if (write(fd_server, &opc, 1) == -1)
         return -1;

@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
             continue;
         }
         switch (opt) {
-        case '1':
+        case TFS_OP_CODE_MOUNT:
 
             string_read = (int)read(fd_server, buffer, MAX_NAME);
             if (string_read == -1) {
@@ -97,7 +97,7 @@ int main(int argc, char **argv) {
             }
 
             break;
-        case '2':
+        case TFS_OP_CODE_UNMOUNT:
             int_read = (int)read(fd_server, &id, sizeof(int));
             if (int_read == -1) {
                 printf("error reading id: %s\n", strerror(errno));
@@ -111,7 +111,7 @@ int main(int argc, char **argv) {
             }
             break;
 
-        case '3':
+        case TFS_OP_CODE_OPEN:
 
             int_read = (int)read(fd_server, &id, sizeof(int));
             if (int_read == -1) {
@@ -136,7 +136,7 @@ int main(int argc, char **argv) {
             }
             break;
 
-        case '4':
+        case TFS_OP_CODE_CLOSE:
             int_read = (int)read(fd_server, &id, sizeof(int));
             if (int_read == -1) {
                 printf("error reading id: %s\n", strerror(errno));
@@ -155,7 +155,7 @@ int main(int argc, char **argv) {
             }
             break;
 
-        case '5':
+        case TFS_OP_CODE_WRITE:
             int_read = (int)read(fd_server, &id, sizeof(int));
             if (int_read == -1) {
                 printf("error reading id: %s\n", strerror(errno));
@@ -184,7 +184,7 @@ int main(int argc, char **argv) {
             }
             break;
 
-        case '6':
+        case TFS_OP_CODE_READ:
 
             int_read = (int)read(fd_server, &id, sizeof(int));
             if (int_read == -1) {
@@ -212,7 +212,7 @@ int main(int argc, char **argv) {
                 return -1;
             }
             break;
-        case '7':
+        case TFS_OP_CODE_SHUTDOWN_AFTER_ALL_CLOSED:
             return_value = tfs_destroy_after_all_closed();
             if ((written = write(clients[id].fd, &return_value,
                                  sizeof(return_value))) < 0) {
