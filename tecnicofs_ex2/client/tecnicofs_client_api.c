@@ -16,11 +16,11 @@ int fd_server, fd_client, id;
 int tfs_mount(char const *client_pipe_path, char const *server_pipe_path) {
 
     if (unlink(client_pipe_path) == -1 && errno == EEXIST) {
-        puts("client unlink error");
+        printf("client unlink error: %s\n", strerror(errno));
         return -1;
     }
     if (mkfifo(client_pipe_path, PERMISSION_FOR_ALL) == -1) {
-        printf("mkfifo error\n");
+        printf("mkfifo error: %s\n", strerror(errno));
         return -1;
     }
     if ((fd_server = open(server_pipe_path, O_WRONLY)) < 0) {
@@ -52,16 +52,16 @@ int tfs_mount(char const *client_pipe_path, char const *server_pipe_path) {
         } else
             break;
     }
-    printf("session id: %d\n", id);
     return 0;
 }
 
 int tfs_unmount() {
     /* TODO: Implement this */
     char opc = '2';
-    if (write(fd_client, &opc, 1) == -1)
+    if (write(fd_server, &opc, 1) == -1){
         return -1;
-    if (write(fd_client, &id, sizeof(int) == -1))
+    }
+    if (write(fd_server, &id, sizeof(int)) == -1)
         return -1;
     if (close(fd_client) == -1) {
         printf("error closing client pipe\n");
@@ -98,7 +98,6 @@ int tfs_open(char const *name, int flags) {
 }
 
 int tfs_close(int fhandle) {
-    printf("Inicio do close\n");
     char opc = '4';
     int ret_value, bytes_read;
     if (write(fd_server, &opc, 1) == -1)
@@ -141,7 +140,7 @@ ssize_t tfs_write(int fhandle, void const *buffer, size_t len) {
     while (1) {
         if ((bytes_read =
                  (int)read(fd_client, &ret_value, sizeof(ret_value))) == -1) {
-            printf("error reading id\n");
+            printf("error reading id: %s\n", strerror(errno));
             break;
         } else if (bytes_read == 0) {
             continue;
@@ -178,7 +177,7 @@ ssize_t tfs_read(int fhandle, void *buffer, size_t len) {
     while (1) {
         if ((bytes_read = (int)read(fd_client, &buffer_write, BLOCK_SIZE)) ==
             -1) {
-            printf("error reading id\n");
+            printf("error reading id: %s\n", strerror(errno));
             break;
         } else if (bytes_read == 0) {
             continue;
@@ -187,8 +186,6 @@ ssize_t tfs_read(int fhandle, void *buffer, size_t len) {
     }
 
     memcpy(buffer, buffer_write, (size_t)ret_value);
-    puts(buffer_write);
-    puts(buffer);
     return ret_value;
 }
 
@@ -204,7 +201,7 @@ int tfs_shutdown_after_all_closed() {
     while (1) {
         if ((bytes_read =
                  (int)read(fd_client, &ret_value, sizeof(ret_value))) == -1) {
-            printf("error reading bytes\n");
+            printf("error reading bytes: %s\n", strerror(errno));
             return -1;
         } else if (bytes_read == 0) {
             continue;
