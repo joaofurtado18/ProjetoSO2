@@ -57,7 +57,7 @@ int tfs_unmount() {
     write(fd_client, &opc, 1);
     write(fd_client, &id, sizeof(int));
 
-    if(close(fd_client)== -1){
+    if (close(fd_client) == -1) {
         printf("error closing client pipe\n");
         return -1;
     }
@@ -154,8 +154,7 @@ ssize_t tfs_read(int fhandle, void *buffer, size_t len) {
     }
     char buffer_write[1024];
     while (1) {
-        if ((bytes_read = read(fd_client, &buffer_write, 1024)) ==
-            -1) {
+        if ((bytes_read = read(fd_client, &buffer_write, 1024)) == -1) {
             printf("error reading id\n");
             break;
         } else if (bytes_read == 0) {
@@ -164,7 +163,7 @@ ssize_t tfs_read(int fhandle, void *buffer, size_t len) {
             break;
     }
 
-    //char read_buffer[return_value];
+    // char read_buffer[return_value];
     memcpy(buffer, buffer_write, ret_value);
     puts(buffer_write);
     puts(buffer);

@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 #define MAX_CLIENTS (1)
+#define MAX_NAME (40)
 
 typedef struct client_s {
     int fd;
@@ -19,8 +20,8 @@ client clients[MAX_CLIENTS];
 int FREE_SESSION_ID_TABLE[MAX_CLIENTS];
 int find_session_id() {
     for (int i = 0; i < MAX_CLIENTS; i++) {
-        if (FREE_SESSION_ID_TABLE[i] == 0) {
-            FREE_SESSION_ID_TABLE[i] = 1;
+        if (FREE_SESSION_ID_TABLE[i] == FREE) {
+            FREE_SESSION_ID_TABLE[i] = TAKEN;
             return i;
         }
     }
@@ -51,11 +52,10 @@ int main(int argc, char **argv) {
     }
 
     printf("Starting TecnicoFS server with pipe called %s\n", pipename);
-    memset(FREE_SESSION_ID_TABLE, 0, sizeof(FREE_SESSION_ID_TABLE));
+    memset(FREE_SESSION_ID_TABLE, FREE, sizeof(FREE_SESSION_ID_TABLE));
 
-    /* TO DO */
     ssize_t bytes_read, string_read;
-    char buffer[40], buffer_write[1024];
+    char buffer[MAX_NAME], buffer_write[BLOCK_SIZE];
     char opt;
     int fd_server, fd_client, int_read, id, flags, return_value, fhandle;
     ssize_t written, len, len_read;
@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
         switch (opt) {
         case '1':
 
-            string_read = read(fd_server, buffer, 40);
+            string_read = read(fd_server, buffer, MAX_NAME);
             if (string_read == -1) {
                 printf("error reading client pipe path");
             }
@@ -104,7 +104,7 @@ int main(int argc, char **argv) {
             if (int_read == -1) {
                 printf("error reading id");
             }
-            FREE_SESSION_ID_TABLE[id] = 0;
+            FREE_SESSION_ID_TABLE[id] = FREE;
             if (close(clients[id].fd) == -1) {
                 printf("error closing client pipe\n");
                 return -1;
@@ -118,7 +118,7 @@ int main(int argc, char **argv) {
                 printf("error reading id");
             }
 
-            string_read = read(fd_server, buffer, 40);
+            string_read = read(fd_server, buffer, MAX_NAME);
             if (string_read == -1) {
                 printf("error reading name");
             }
@@ -166,7 +166,7 @@ int main(int argc, char **argv) {
                 printf("error reading fhandle");
             }
 
-            string_read = read(fd_server, buffer_write, 1024);
+            string_read = read(fd_server, buffer_write, BLOCK_SIZE);
             if (string_read == -1) {
                 printf("error reading buffer");
             }
@@ -177,7 +177,8 @@ int main(int argc, char **argv) {
             }
 
             return_value = tfs_write(fhandle, buffer_write, len);
-            if ((written = write(clients[id].fd, &return_value, sizeof(int))) < 0) {
+            if ((written = write(clients[id].fd, &return_value, sizeof(int))) <
+                0) {
                 printf("error writing ret val: %ld\n", written);
                 return -1;
             }
@@ -199,13 +200,14 @@ int main(int argc, char **argv) {
             if (len_read == -1) {
                 printf("error reading len");
             }
-            memset(buffer_write, 0, 1024);
+            memset(buffer_write, 0, BLOCK_SIZE);
             return_value = tfs_read(fhandle, buffer_write, len);
             if ((written = write(fd_client, &return_value, sizeof(int))) < 0) {
                 printf("error writing ret val: %ld\n", written);
                 return -1;
             }
-            if ((written = write(clients[id].fd, &buffer_write, 1024)) < 0) {
+            if ((written = write(clients[id].fd, &buffer_write, BLOCK_SIZE)) <
+                0) {
                 printf("error writing ret val: %ld\n", written);
                 return -1;
             }
