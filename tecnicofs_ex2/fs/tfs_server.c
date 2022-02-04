@@ -10,7 +10,7 @@
 #define MAX_CLIENTS (1)
 
 typedef struct client_s {
-    char path[40];
+    int fd;
     int session_id;
 } client;
 
@@ -83,19 +83,17 @@ int main(int argc, char **argv) {
 
             id = find_session_id();
             clients[id].session_id = id;
-            memcpy(clients[id].path, buffer, sizeof(buffer));
 
-            printf("%s\n", clients[id].path);
-
-            if ((fd_client = open(clients[id].path, O_WRONLY)) < 0) {
+            if ((fd_client = open(buffer, O_WRONLY)) < 0) {
                 printf("error opening server -> client path: %s\n",
                        strerror(errno));
                 return -1;
             }
+            clients[id].fd = fd_client;
 
             printf("s_id: %d\n", id);
 
-            if ((written = write(fd_client, &id, sizeof(id))) < 0) {
+            if ((written = write(clients[id].fd, &id, sizeof(id))) < 0) {
                 printf("error writing id: %ld\n", written);
                 return -1;
             }
@@ -120,7 +118,7 @@ int main(int argc, char **argv) {
             }
 
             return_value = tfs_open(buffer, flags);
-            if ((written = write(fd_client, &return_value,
+            if ((written = write(clients[id].fd, &return_value,
                                  sizeof(return_value))) < 0) {
                 printf("error writing ret val: %ld\n", written);
                 return -1;
@@ -139,7 +137,7 @@ int main(int argc, char **argv) {
             }
 
             return_value = tfs_close(fhandle);
-            if ((written = write(fd_client, &return_value,
+            if ((written = write(clients[id].fd, &return_value,
                                  sizeof(return_value))) < 0) {
                 printf("error writing ret val: %ld\n", written);
                 return -1;
@@ -168,7 +166,7 @@ int main(int argc, char **argv) {
             }
 
             return_value = tfs_write(fhandle, buffer_write, len);
-            if ((written = write(fd_client, &return_value, sizeof(int))) < 0) {
+            if ((written = write(clients[id].fd, &return_value, sizeof(int))) < 0) {
                 printf("error writing ret val: %ld\n", written);
                 return -1;
             }
@@ -196,12 +194,10 @@ int main(int argc, char **argv) {
                 printf("error writing ret val: %ld\n", written);
                 return -1;
             }
-            if ((written = write(fd_client, &buffer_write, 1024)) < 0) {
+            if ((written = write(clients[id].fd, &buffer_write, 1024)) < 0) {
                 printf("error writing ret val: %ld\n", written);
                 return -1;
             }
-            break;
-
             break;
         default:
             printf("switch case didnt match, opt: %c\n", opt);
