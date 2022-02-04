@@ -106,7 +106,6 @@ int main(int argc, char **argv) {
             
             case '3':
                 
-                printf("%d\n", fd_server);
                 int_read = read(fd_server, &id, sizeof(int));
                 if (int_read == -1){
                     printf("error reading id");
@@ -117,16 +116,13 @@ int main(int argc, char **argv) {
                     printf("error reading name");
                 }
 
-                printf("%d\n", fd_server);
                 int_read = read(fd_server, &flags, sizeof(int));
                 if (int_read == -1){
                     printf("error reading flag");
                 }
-                puts("saçv2222eee");
 
 
                 return_value = tfs_open(buffer, flags);
-                puts("saçveee");
                 if ((written = write(fd_client, &return_value , sizeof(return_value))) < 0){
                     printf("error writing ret val: %ld\n", written);
                     return -1;
@@ -145,8 +141,6 @@ int main(int argc, char **argv) {
                 }
 
                 break;
-
-
             default:
                 printf("switch case didnt match, opt: %c\n", opt);
                 break;
